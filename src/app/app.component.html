@@ -1,18 +1,49 @@
-<h1>
-  Hooli Search
-</h1>
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>
+        Hooli Search
+      </h1>
+    </div>
+  </div>
 
-<form [formGroup]="search" (submit)="setQuery()">
-  <input type="text" formControlName="stringQuery">
-  <button type="submit">Поиск</button>
-</form>
+  <form class="row" [formGroup]="search" (submit)="setQuery()">
+    <div class="col-12 col-md-8">
+      <input class="search-field form-control" type="text" formControlName="stringQuery">
+    </div>
+    <div class="col-12 col-md-3 offset-md-1">
+      <button class="submit-button btn btn-primary" type="submit">Поиск</button>
+    </div>
+  </form>
 
-<ul *ngIf="this.server.listOfResult">
-  <li *ngFor="let link of this.server.listOfResult">
-    {{link.title}}
-  </li>
-</ul>
+  <div class="row">
+    <div class="col search-result">
+      <ng-container *ngIf="this.server.listOfResult">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th (click)="setTypeSort('id')">ID</th>
+            <th (click)="setTypeSort('title')">Title</th>
+            <th (click)="setTypeSort('description')">Description</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let link of this.server.listOfResult; let i = index;">
+            <th scope="row">{{i+1}}</th>
+            <td>{{link.id}}</td>
+            <td>{{link.title}}</td>
+            <td>{{link.description}}</td>
+          </tr>
+          </tbody>
+        </table>
 
-<div *ngIf="!this.server.listOfResult">
-  Загрузка
+        <h4>
+          Всего результатов: {{ this.server.listOfResult.length}}
+        </h4>
+      </ng-container>
+
+      <div *ngIf="!this.server.listOfResult" class="spinner"></div>
+    </div>
+  </div>
 </div>

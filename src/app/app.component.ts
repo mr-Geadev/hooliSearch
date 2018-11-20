@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ServerService } from 'src/app/server.service';
 
@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   });
 
   readonly query: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  readonly sortType: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
   constructor(readonly server: ServerService) {
   }
@@ -24,9 +25,13 @@ export class AppComponent implements OnInit {
     this.query.next(this.search.controls['stringQuery'].value);
   }
 
+  public setTypeSort(type: string) {
+    this.sortType.next(type);
+  }
+
   ngOnInit() {
     // Я не знаю как избавиться от этой подписки.
-    // Можно было кидать ее сразу в метод сервиса, но тогда не получилось бы отменять debounce по клику
+    // Можно было кидать этот поток сразу в метод сервиса(как я сначала и сделал), но тогда не получилось отменять debounce по клику
     this.search.controls['stringQuery'].valueChanges.pipe(
       debounceTime(1000),
     ).subscribe(() => this.setQuery());
@@ -34,7 +39,9 @@ export class AppComponent implements OnInit {
     this.server.getLinks(
       this.query.pipe(
         distinctUntilChanged(),
-      )
+      ),
     );
+
+    this.server.sortList(this.sortType);
   }
 }
