@@ -43,7 +43,11 @@
         </h4>
       </ng-container>
 
-      <div *ngIf="!this.server.listOfResult" class="spinner"></div>
+      <div class="alert alert-danger" role="alert" *ngIf="this.server.errors">
+        {{this.server.errors}}
+      </div>
+
+      <div *ngIf="!this.server.listOfResult && !this.server.errors" class="spinner"></div>
     </div>
   </div>
 </div>

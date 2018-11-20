@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { delay, filter, map } from 'rxjs/operators';
 import { Link } from 'src/app/link.model';
 
@@ -8,6 +8,9 @@ import { Link } from 'src/app/link.model';
 export class ServerService {
 
   public listOfResult: Link[] = null;
+
+  public errors: string = null;
+  public countOfRequest: number = 0; // для имитации ошибки сервера
 
   constructor(private _http: HttpClient) {
   }
@@ -25,15 +28,15 @@ export class ServerService {
           }
           return 0;
         });
-      })
+      }),
     ).subscribe();
   }
 
   public getLinks(searchQuery: Observable<string>): void {
     searchQuery.subscribe(
       (query) => {
-        console.log(query);
         this.listOfResult = null;
+        this.errors = null;
         this.getLinksFromServer(query);
       },
     );
@@ -43,10 +46,17 @@ export class ServerService {
     this._http.get('/assets/json/server.json').pipe(
       delay(1000),
       map(res => {
-        this.listOfResult = res['links']
-          .filter(link => {
-            return link.title.toLowerCase().indexOf(query.toLowerCase()) > -1 ? new Link(link) : false;
-          });
+        if (this.countOfRequest !== 3) { // для имитации ошибки сервера
+          this.listOfResult = res['links']
+            .filter(link => {
+              return link.title.toLowerCase().indexOf(query.toLowerCase()) > -1 ? new Link(link) : false;
+            });
+          this.countOfRequest++; // для имитации ошибки сервера
+        } else {
+          this.listOfResult = null;
+          this.errors = 'Ошибка';
+          this.countOfRequest = 0; // для имитации ошибки сервера
+        }
       }),
     ).subscribe();
   }
