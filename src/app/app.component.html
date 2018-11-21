@@ -7,29 +7,29 @@
     </div>
   </div>
 
-  <form class="row" [formGroup]="search" (submit)="setQuery()">
+  <div class="row">
     <div class="col-12 col-md-8">
-      <input class="search-field form-control" type="text" formControlName="stringQuery">
+      <input class="search-field form-control" type="text" [formControl]="search">
     </div>
     <div class="col-12 col-md-3 offset-md-1">
-      <button class="submit-button btn btn-primary" type="submit">Поиск</button>
+      <button (click)="searchButton.next(true)" class="submit-button btn btn-primary" type="submit">Поиск</button>
     </div>
-  </form>
+  </div>
 
   <div class="row">
     <div class="col search-result">
-      <ng-container *ngIf="this.server.listOfResult">
+      <ng-container>
         <table class="table">
           <thead>
           <tr>
             <th>#</th>
-            <th (click)="setTypeSort('id')">ID</th>
-            <th (click)="setTypeSort('title')">Title</th>
-            <th (click)="setTypeSort('description')">Description</th>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let link of this.server.listOfResult; let i = index;">
+          <tr *ngFor="let link of this.listLinks$ | async; let i = index;">
             <th scope="row">{{i+1}}</th>
             <td>{{link.id}}</td>
             <td>{{link.title}}</td>
@@ -38,16 +38,16 @@
           </tbody>
         </table>
 
-        <h4>
-          Всего результатов: {{ this.server.listOfResult.length}}
-        </h4>
+        <!--<h4>-->
+          <!--Всего результатов: {{ this.server.listOfResult.length}}-->
+        <!--</h4>-->
       </ng-container>
 
-      <div class="alert alert-danger" role="alert" *ngIf="this.server.errors">
-        {{this.server.errors}}
-      </div>
+      <!--<div class="alert alert-danger" role="alert" *ngIf="this.server.errors">-->
+        <!--{{this.server.errors}}-->
+      <!--</div>-->
 
-      <div *ngIf="!this.server.listOfResult && !this.server.errors" class="spinner"></div>
+      <!--<div *ngIf="!this.server.listOfResult && !this.server.errors" class="spinner"></div>-->
     </div>
   </div>
 </div>

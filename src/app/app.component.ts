@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { BehaviorSubject, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, merge, share, startWith, switchMap } from 'rxjs/operators';
+import { Link } from 'src/app/link.model';
 import { ServerService } from 'src/app/server.service';
 
 @Component({
@@ -9,39 +10,41 @@ import { ServerService } from 'src/app/server.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
-  readonly search: FormGroup = new FormGroup({
-    stringQuery: new FormControl(''),
-  });
+  readonly search: FormControl = new FormControl('');
 
-  readonly query: BehaviorSubject<string> = new BehaviorSubject<string>('');
-  readonly sortType: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  // поток отслеживания изменений в инпуте
+  readonly textInput$: Observable<string> = this.search.valueChanges.pipe(
+    startWith(''),
+    debounceTime(1000),
+    map((val) => {
+      return val;
+    }),
+    share(),
+  );
+
+  // кнопка поиска
+  readonly searchButton = new Subject<boolean>();
+  // поток, который немедленно отправляет текущее значение инпута как query параметр
+  readonly searchButton$: Observable<string> = this.searchButton.asObservable().pipe(
+    map(() => {
+      return this.search.value;
+    }),
+    share(),
+  );
+
+  // поток списка ссылок. Делает запрос когда лиюо произошло нажатие на кнопку, либо пользователь ничего не вводит какое-то время
+  readonly listLinks$: Observable<Link[]> = this.textInput$.pipe(
+    merge(this.searchButton$), // единственное я не понял, почему merge (и все оперторы комбинаций) deprecated, когда в оифициальной документации они не является таковыми
+    distinctUntilChanged(),
+    switchMap(val => {
+      return this.server.getLinks(val);
+    }),
+    share(),
+  );
 
   constructor(readonly server: ServerService) {
   }
 
-  public setQuery() {
-    this.query.next(this.search.controls['stringQuery'].value);
-  }
-
-  public setTypeSort(type: string) {
-    this.sortType.next(type);
-  }
-
-  ngOnInit() {
-    // Я не знаю как избавиться от этой подписки.
-    // Можно было кидать этот поток сразу в метод сервиса(как я сначала и сделал), но тогда не получилось отменять debounce по клику
-    this.search.controls['stringQuery'].valueChanges.pipe(
-      debounceTime(1000),
-    ).subscribe(() => this.setQuery());
-
-    this.server.getLinks(
-      this.query.pipe(
-        distinctUntilChanged(),
-      ),
-    );
-
-    this.server.sortList(this.sortType);
-  }
 }
