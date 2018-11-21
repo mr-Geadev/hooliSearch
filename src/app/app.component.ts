@@ -1,7 +1,17 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, merge, share, startWith, switchMap } from 'rxjs/operators';
+import { merge, Observable, Subject } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  mapTo,
+  publishReplay,
+  refCount,
+  share,
+  startWith,
+  switchMap,
+} from 'rxjs/operators';
 import { Link } from 'src/app/link.model';
 import { ServerService } from 'src/app/server.service';
 
@@ -35,12 +45,25 @@ export class AppComponent {
   );
 
   // поток списка ссылок. Делает запрос когда лиюо произошло нажатие на кнопку, либо пользователь ничего не вводит какое-то время
-  readonly listLinks$: Observable<Link[]> = this.textInput$.pipe(
-    merge(this.searchButton$), // единственное я не понял, почему merge (и все оперторы комбинаций) deprecated, когда в оифициальной документации они не является таковыми
+  readonly listLinks$: Observable<Link[]> = merge(
+    this.textInput$,
+    this.searchButton$,
+  ).pipe(
     distinctUntilChanged(),
     switchMap(val => {
       return this.server.getLinks(val);
     }),
+    publishReplay(1), // отправляет последнее значение к вновь подписавшимся обзерверам
+    refCount(),
+  );
+
+  // поток спинера
+  readonly spinner$: Observable<boolean> = merge(
+    this.textInput$.pipe(mapTo(true)),
+    this.searchButton$.pipe(mapTo(true)),
+    this.listLinks$.pipe(map(() => false)),
+  ).pipe(
+    startWith(true),
     share(),
   );
 

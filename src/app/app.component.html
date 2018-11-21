@@ -18,7 +18,7 @@
 
   <div class="row">
     <div class="col search-result">
-      <ng-container>
+      <ng-container  *ngIf="!(spinner$ | async)">
         <table class="table">
           <thead>
           <tr>
@@ -38,16 +38,16 @@
           </tbody>
         </table>
 
-        <!--<h4>-->
-          <!--Всего результатов: {{ this.server.listOfResult.length}}-->
-        <!--</h4>-->
+        <h4>
+          Всего результатов: {{ (this.listLinks$ | async).length}}
+        </h4>
       </ng-container>
 
       <!--<div class="alert alert-danger" role="alert" *ngIf="this.server.errors">-->
         <!--{{this.server.errors}}-->
       <!--</div>-->
 
-      <!--<div *ngIf="!this.server.listOfResult && !this.server.errors" class="spinner"></div>-->
+      <div *ngIf="spinner$ | async" class="spinner"></div>
     </div>
   </div>
 </div>
