@@ -12,7 +12,7 @@
       <input class="search-field form-control" type="text" [formControl]="search">
     </div>
     <div class="col-12 col-md-3 offset-md-1">
-      <button (click)="searchButton.next(true)" class="submit-button btn btn-primary" type="submit">Поиск</button>
+      <button (click)="searchButton.next()" class="submit-button btn btn-primary" type="submit">Поиск</button>
     </div>
   </div>
 
@@ -23,9 +23,9 @@
           <thead>
           <tr>
             <th>#</th>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Description</th>
+            <th (click)="sortButton.next('id')">ID</th>
+            <th (click)="sortButton.next('title')">Title</th>
+            <th (click)="sortButton.next('description')">Description</th>
           </tr>
           </thead>
           <tbody>
